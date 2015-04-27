@@ -84,7 +84,7 @@ class Grid(object):
 		
 	# called recursively
 	def calcIntentedDirection(self, row, col, num_iterations):
-		if(row < 0 or col < 0 or row > 5 or col > 5):
+		if(row < 0 or col < 0 or row > 5 || col > 5):
 			print "out of bounds"
 		else:
 			print "method called correctly"
