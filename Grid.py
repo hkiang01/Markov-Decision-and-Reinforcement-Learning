@@ -1,4 +1,6 @@
 
+discountFactor = 0.99
+numTotalIterations = 50
 
 #a C-like struct for a square in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
@@ -83,11 +85,15 @@ class Grid(object):
 		print "grid printed"
 		
 	# called recursively
-	def calcIntentedDirection(self, row, col, num_iterations):
-		if(row < 0 or col < 0 or row > 5 or col > 5):
+	def calcUtility(self, row, col, numIterations):
+	
+		def calcUtilityHelper(self, row, col, numIterations):
+			return
+	
+		if(row < 0 or col < 0 or row > 5 or col > 5 or numIterations < 0 or numIterations > numTotalIterations):
 			print "out of bounds"
 		else:
-			print "method called correctly"
+			print "calcUtility called"
 			
 		return
 	

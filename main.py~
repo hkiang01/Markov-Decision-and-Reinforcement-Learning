@@ -3,5 +3,5 @@ import sys
 
 my_grid = Grid("grid.txt")
 my_grid.printGrid()
-my_grid.calcUtility(0,0,0)
+my_grid.calcIntendedDirection(0,0,0)
 
