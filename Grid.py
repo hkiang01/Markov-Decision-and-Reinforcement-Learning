@@ -1,6 +1,5 @@
 
 discountFactor = 0.99
-numTotalIterations = 10
 rewardFunction = -0.04
 
 #a C-like struct for a cell in the maze
@@ -37,7 +36,7 @@ class Grid(object):
 	grid = [] # a 2d list of cells
 	rows = 0
 	cols = 0
-	
+	numTotalIterations = 10
 	def parseGrid(self, filename):
 		print "parsing grid"
 		f = open(filename, "r")
@@ -93,11 +92,11 @@ class Grid(object):
 	def calcIntendedDirection(self, row, col):
 		
 		def calcIntendedDirectionHelper(self, row, col, numIterations, utility):
-			#out of bounds
+			#out of bounds. same as wall
 			if(row < 0 or col < 0 or row > self.rows-1 or col > self.cols-1):
 				utility += rewardFunction
 				return utility
-			#wall
+			#wall, same as out of bounds
 			if(self.grid[row][col].isWall==True):
 				utility += rewardFunction
 				return utility
@@ -117,10 +116,10 @@ class Grid(object):
 			
 				
 	
-		uUtil = calcIntendedDirectionHelper(self, row-1, col, numTotalIterations, 0)
-		rUtil = calcIntendedDirectionHelper(self, row, col+1, numTotalIterations, 0)
-		dUtil = calcIntendedDirectionHelper(self, row+1, col, numTotalIterations, 0)
-		lUtil = calcIntendedDirectionHelper(self, row, col-1, numTotalIterations, 0)
+		uUtil = calcIntendedDirectionHelper(self, row-1, col, self.numTotalIterations, 0)
+		rUtil = calcIntendedDirectionHelper(self, row, col+1, self.numTotalIterations, 0)
+		dUtil = calcIntendedDirectionHelper(self, row+1, col, self.numTotalIterations, 0)
+		lUtil = calcIntendedDirectionHelper(self, row, col-1, self.numTotalIterations, 0)
 		
 		temp = max(uUtil, rUtil, dUtil, lUtil)
 		
@@ -134,7 +133,26 @@ class Grid(object):
 			self.grid[row][col].intendedDirection = 3
 		print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
 	
+	def printIntendedDirections(self):
+		print "printing directions..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					if(col.intendedDirection==0):
+						print "^\t",
+					elif(col.intendedDirection==1):
+						print ">\t",
+					elif(col.intendedDirection==2):
+						print "v\t",
+					else:
+						print "<\t",
+			print "\n",
+		print "grid printed"
 	
-	def __init__(self, filename_grid):
+	
+	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
+		self.numTotalIterations = num_iterations
 
