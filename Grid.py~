@@ -2,9 +2,9 @@
 discountFactor = 0.99
 numTotalIterations = 50
 
-#a C-like struct for a square in the maze
+#a C-like struct for a cell in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
-class Square(object):
+class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
 		self.utility = 0 #calculated with Bellman equation

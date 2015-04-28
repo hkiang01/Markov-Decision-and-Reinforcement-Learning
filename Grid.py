@@ -2,9 +2,9 @@
 discountFactor = 0.99
 numTotalIterations = 50
 
-#a C-like struct for a square in the maze
+#a C-like struct for a cell in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
-class Square(object):
+class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
 		self.utility = 0 #calculated with Bellman equation
@@ -47,25 +47,25 @@ class Grid(object):
 			for c in line:
 				print c, #print in format of grid.txt
 				if(c==' '):
-					#print "appending blank square"
-					curr_line.append(Square(0.0, False, False))
+					#print "appending blank cell"
+					curr_line.append(Cell(0.0, False, False))
 				elif(c=='W'):
 					#print "appending wall"
-					curr_line.append(Square(0.0, True, False))
+					curr_line.append(Cell(0.0, True, False))
 				elif(c=='+'):
 					#print "appending +1"
-					curr_line.append(Square(1.0, False, False))
+					curr_line.append(Cell(1.0, False, False))
 				elif(c=='-'):
 					#print "appending -1"
-					curr_line.append(Square(-1.0, False, False))
+					curr_line.append(Cell(-1.0, False, False))
 				elif(c=='S'):
 					#print "appending start"
-					curr_line.append(Square(0.0, False, True))
+					curr_line.append(Cell(0.0, False, True))
 				elif(c=='\n'):
 					continue #realines returns '\n' terminated strings
 				else:
 					#this shouldn't happen
-					print "Error: Invalid Square"
+					print "Error: Invalid Cell"
 			curr_grid.append(curr_line)
 		print "grid parsed"
 		return curr_grid
