@@ -33,7 +33,7 @@ class Cell(object):
 		self.utility = in_utility
 
 class Grid(object):
-	grid = [] # a 2d list of ints 
+	grid = [] # a 2d list of cells
 	
 	def parseGrid(self, filename):
 		print "parsing grid"
@@ -68,6 +68,7 @@ class Grid(object):
 					print "Error: Invalid Cell"
 			curr_grid.append(curr_line)
 		print "grid parsed"
+		self.grid = curr_grid
 		return curr_grid
 				
 	def printGrid(self):
