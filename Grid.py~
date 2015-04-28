@@ -1,6 +1,7 @@
 
 discountFactor = 0.99
-numTotalIterations = 50
+numTotalIterations = 10
+rewardFunction = -0.04
 
 #a C-like struct for a cell in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
@@ -34,14 +35,18 @@ class Cell(object):
 
 class Grid(object):
 	grid = [] # a 2d list of cells
+	rows = 0
+	cols = 0
 	
 	def parseGrid(self, filename):
 		print "parsing grid"
 		f = open(filename, "r")
 		lines = f.readlines()
 		f.close()
-		
 		curr_grid = []
+		self.cols = len(lines[0])-1 #-1 for newline character
+		self.rows = len(lines)
+		print "There are", self.rows, "rows and", self.cols, "columns"
 		for line in lines:
 			curr_line = []
 			for c in line:
@@ -68,6 +73,7 @@ class Grid(object):
 					print "Error: Invalid Cell"
 			curr_grid.append(curr_line)
 		print "grid parsed"
+		self.grid = curr_grid
 		return curr_grid
 				
 	def printGrid(self):
@@ -83,19 +89,50 @@ class Grid(object):
 					print "\t",
 			print "\n",
 		print "grid printed"
+	
+	def calcIntendedDirection(self, row, col):
 		
-	# called recursively
-	def calcUtility(self, row, col, numIterations):
-	
-		def calcUtilityHelper(self, row, col, numIterations):
-			return
-	
-		if(row < 0 or col < 0 or row > 5 or col > 5 or numIterations < 0 or numIterations > numTotalIterations):
-			print "out of bounds"
-		else:
-			print "calcUtility called"
+		def calcIntendedDirectionHelper(self, row, col, numIterations, utility):
+			#out of bounds
+			if(row < 0 or col < 0 or row > self.rows-1 or col > self.cols-1):
+				utility += rewardFunction
+				return utility
+			#wall
+			if(self.grid[row][col].isWall==True):
+				utility += rewardFunction
+				return utility
+			#last iteration
+			if(numIterations<=0):
+				return utility
+			if(self.grid[row][col].value!=0):
+				utility += self.grid[row][col].value
+			else:
+				utility += rewardFunction
+			numIterations -= 1
+			uUtil = calcIntendedDirectionHelper(self, row-1, col, numIterations, utility)
+			rUtil = calcIntendedDirectionHelper(self, row, col+1, numIterations, utility)
+			dUtil = calcIntendedDirectionHelper(self, row+1, col, numIterations, utility)
+			lUtil = calcIntendedDirectionHelper(self, row, col-1, numIterations, utility)
+			return max(uUtil, rUtil, dUtil, lUtil)
 			
-		return
+				
+	
+		uUtil = calcIntendedDirectionHelper(self, row-1, col, numTotalIterations, 0)
+		rUtil = calcIntendedDirectionHelper(self, row, col+1, numTotalIterations, 0)
+		dUtil = calcIntendedDirectionHelper(self, row+1, col, numTotalIterations, 0)
+		lUtil = calcIntendedDirectionHelper(self, row, col-1, numTotalIterations, 0)
+		
+		temp = max(uUtil, rUtil, dUtil, lUtil)
+		
+		if(uUtil==temp):
+			self.grid[row][col].intendedDirection = 0
+		elif(rUtil==temp):
+			self.grid[row][col].intendedDirection = 1
+		elif(dUtil==temp):
+			self.grid[row][col].intendedDirection = 2
+		else:
+			self.grid[row][col].intendedDirection = 3
+		print "(", row, ",", col, "): ", temp#self.grid[row][col].intendedDirection
 	
 	
 	def __init__(self, filename_grid):

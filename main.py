@@ -2,9 +2,20 @@ from Grid import *
 import sys
 
 my_grid = Grid("grid.txt")
-another_grid = Grid("grid2.txt")
-my_grid.grid[0][0].setValue(0.5)
+
+#row_counter = 0
+#for row in my_grid.grid:
+#	col_counter = 0
+#	for col in row:
+#		my_grid.calcIntendedDirection(row_counter, col_counter)
+#		col_counter += 1
+#	row_counter += 1
+	
+for col in xrange(0,my_grid.cols):
+	for row in xrange(0,my_grid.rows):
+		my_grid.calcIntendedDirection(row, col)
+		
+
 my_grid.printGrid()
-another_grid.printGrid()
-my_grid.calcUtility(0,0,0)
+
 
