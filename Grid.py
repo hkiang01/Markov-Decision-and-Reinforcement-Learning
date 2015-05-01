@@ -1,6 +1,8 @@
 
 discountFactor = 0.99
 rewardFunction = -0.04
+intendedDirectionLikelihood = 0.8
+rightAngleLikelihood = 0.1
 
 #a C-like struct for a cell in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
@@ -11,6 +13,10 @@ class Cell(object):
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
 		self.intendedDirection = -1 #0 up, 1 right, 2 down, 3 left, -1 unassigned
+		self.probUp = 0.0
+		self.probRight = 0.0
+		self.probDown = 0.0
+		self.probLeft = 0.0
 		#how many times we have taken a certain action from this cell (state)
 		#see "Incorporating exploration" (slide 12) in lecture 17 (Reinforcement Learning)
 		self.actionUp = 0
@@ -137,14 +143,30 @@ class Grid(object):
 		
 		temp = max(uUtil, rUtil, dUtil, lUtil)
 		
-		if(uUtil==temp):
+		if(uUtil==temp):#up
 			self.grid[row][col].intendedDirection = 0
-		elif(rUtil==temp):
+			self.grid[row][col].probUp = 0.8
+			self.grid[row][col].probRight = 0.1
+			self.grid[row][col].probDown = 0.0
+			self.grid[row][col].probLeft = 0.1
+		elif(rUtil==temp):#right
 			self.grid[row][col].intendedDirection = 1
-		elif(dUtil==temp):
+			self.grid[row][col].probUp = 0.1
+			self.grid[row][col].probRight = 0.8
+			self.grid[row][col].probDown = 0.1
+			self.grid[row][col].probLeft = 0.0
+		elif(dUtil==temp):#down
 			self.grid[row][col].intendedDirection = 2
-		else:
+			self.grid[row][col].probUp = 0.0
+			self.grid[row][col].probRight = 0.1
+			self.grid[row][col].probDown = 0.8
+			self.grid[row][col].probLeft = 0.1
+		else:#left
 			self.grid[row][col].intendedDirection = 3
+			self.grid[row][col].probUp = 0.1
+			self.grid[row][col].probRight = 0.0
+			self.grid[row][col].probDown = 0.1
+			self.grid[row][col].probLeft = 0.8
 			
 		self.grid[row][col].utility = temp
 		print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
@@ -243,6 +265,7 @@ class Grid(object):
 		else:
 			print "Invalid move. Please select a move between 0 and 3, inclusive"
 	
+
 	
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
