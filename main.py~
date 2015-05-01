@@ -21,5 +21,4 @@ for iterations in xrange(5, 0, -5):
 	my_grid.printUtilities()
 	my_grid.resetGridUtilities()
 	my_grid.setCurrentPosition(0,0)
-	my_grid.printGrid()
-	
+
