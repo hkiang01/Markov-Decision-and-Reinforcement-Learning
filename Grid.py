@@ -243,7 +243,6 @@ class Grid(object):
 		else:
 			print "Invalid move. Please select a move between 0 and 3, inclusive"
 	
-	def 
 	
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
