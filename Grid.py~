@@ -47,6 +47,9 @@ class Grid(object):
 	rows = 0
 	cols = 0
 	numTotalIterations = 10
+	currRow = -1 #initially not in the maze
+	currCol = -1
+	
 	def parseGrid(self, filename):
 		print "parsing grid"
 		f = open(filename, "r")
@@ -142,6 +145,8 @@ class Grid(object):
 			self.grid[row][col].intendedDirection = 2
 		else:
 			self.grid[row][col].intendedDirection = 3
+			
+		self.grid[row][col].utility = temp
 		print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
 	
 	def printIntendedDirections(self):
@@ -175,13 +180,68 @@ class Grid(object):
 				col.utility = 0
 	
 	def setCurrentPosition(self, in_row, in_col):
-		#flush out all old current positions
-		for row in self.grid:
-			for col in row:
-				col.currPos = False
+		if(in_row < 0 or in_row > self.rows-1 or in_col < 0 or in_col > self.cols-1):
+			print "out of bounds in setCurrentPosition"
 		
+		print "Moving to(", in_row, ",", in_col, ")"
 		#update the grid with a new current position
+		self.grid[self.currRow][self.currCol].currPos = False
 		self.grid[in_row][in_col].currPos = True
+		self.currRow = in_row
+		self.currCol = in_col
+		
+	def move(self, in_move):
+		#have not yet set an initial position
+		if(self.currRow==-1 or self.currCol==-1):
+			print "Please call setCurrentPosition(row, col)"
+		#0 is up, 1 is right, 2 is down, 3 is left (like a clock)
+		if(in_move==0):
+			if(self.currRow-1 < 0):
+				print "Cannot move up, out of bounds. Staying put."
+			elif(self.grid[self.currRow-1][self.currCol].isWall()==True):
+				print "Cannot move up, wall above. Staying put."
+			#make the move
+			else:
+				print "Moving up from(", self.currRow, ",", self.currCol, ")",
+				self.grid[self.currRow][self.currCol].currPos = False
+				self.currRow -= 1
+				print "to (", self.currRow, ",", self.currCol, ")"
+				self.grid[self.currRow][self.currCol].currPos = True
+		elif(in_move==1):
+			if(self.currCol+1 > self.cols-1):
+				print "Cannot move right, out of bounds. Staying put"
+			elif(self.grid[self.currRow][self.currCol+1].isWall()==True):
+				print "Cannot move right, wall to the right. Staying put."
+			else:
+				print "Moving right from(", self.currRow, ",", self.currCol, ")",
+				self.grid[self.currRow][self.currCol].currPos = False
+				self.currCol += 1
+				print "to (", self.currRow, ",", self.currCol, ")"
+				self.grid[self.currRow][self.currCol].currPos = True
+		elif(in_move==2):
+			if(self.currRow+1 > self.rows-1):
+				print "Cannot move down, out of bounds. Staying put"
+			elif(self.grid[self.currRow+1][self.currCol].isWall()==True):
+				print "Cannot move down, wall below. Staying put."
+			else:
+				print "Moving down from(", self.currRow, ",", self.currCol, ")",
+				self.grid[self.currRow][self.currCol].currPos = False
+				self.currRow += 1
+				print "to (", self.currRow, ",", self.currCol, ")"
+				self.grid[self.currRow][self.currCol].currPos = True
+		elif(in_move==3):
+			if(self.currCol-1 < 0):
+				print "Cannot move left, out of bounds. Staying put"
+			elif(self.grid[self.currRow][self.currCol-1].isWall()==True):
+				print "Cannot move left, wall to the left. Staying put."
+			else:
+				print "Moving left from(", self.currRow, ",", self.currCol, ")",
+				self.grid[self.currRow][self.currCol].currPos = False
+				self.currCol -= 1
+				print "to (", self.currRow, ",", self.currCol, ")"
+				self.grid[self.currRow][self.currCol].currPos = True
+		else:
+			print "Invalid move. Please select a move between 0 and 3, inclusive"
 	
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
