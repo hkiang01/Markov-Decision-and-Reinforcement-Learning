@@ -33,3 +33,6 @@ for iterations in xrange(5, 0, -5):
 	my_grid.move(3)
 	my_grid.printGrid()
 	
+	for i in xrange(0, 5):
+		my_grid.timeStep()
+

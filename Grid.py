@@ -55,6 +55,8 @@ class Grid(object):
 	numTotalIterations = 10
 	currRow = -1 #initially not in the maze
 	currCol = -1
+	t = 0
+	alpha = 60.0/59
 	
 	def parseGrid(self, filename):
 		print "parsing grid"
@@ -145,28 +147,28 @@ class Grid(object):
 		
 		if(uUtil==temp):#up
 			self.grid[row][col].intendedDirection = 0
-			self.grid[row][col].probUp = 0.8
-			self.grid[row][col].probRight = 0.1
+			self.grid[row][col].probUp = intendedDirectionLikelihood
+			self.grid[row][col].probRight = rightAngleLikelihood
 			self.grid[row][col].probDown = 0.0
-			self.grid[row][col].probLeft = 0.1
+			self.grid[row][col].probLeft = rightAngleLikelihood
 		elif(rUtil==temp):#right
 			self.grid[row][col].intendedDirection = 1
-			self.grid[row][col].probUp = 0.1
-			self.grid[row][col].probRight = 0.8
-			self.grid[row][col].probDown = 0.1
+			self.grid[row][col].probUp = rightAngleLikelihood
+			self.grid[row][col].probRight = intendedDirectionLikelihood
+			self.grid[row][col].probDown = rightAngleLikelihood
 			self.grid[row][col].probLeft = 0.0
 		elif(dUtil==temp):#down
 			self.grid[row][col].intendedDirection = 2
 			self.grid[row][col].probUp = 0.0
-			self.grid[row][col].probRight = 0.1
-			self.grid[row][col].probDown = 0.8
-			self.grid[row][col].probLeft = 0.1
+			self.grid[row][col].probRight = rightAngleLikelihood
+			self.grid[row][col].probDown = intendedDirectionLikelihood
+			self.grid[row][col].probLeft = rightAngleLikelihood
 		else:#left
 			self.grid[row][col].intendedDirection = 3
-			self.grid[row][col].probUp = 0.1
+			self.grid[row][col].probUp = rightAngleLikelihood
 			self.grid[row][col].probRight = 0.0
-			self.grid[row][col].probDown = 0.1
-			self.grid[row][col].probLeft = 0.8
+			self.grid[row][col].probDown = rightAngleLikelihood
+			self.grid[row][col].probLeft = intendedDirectionLikelihood
 			
 		self.grid[row][col].utility = temp
 		print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
@@ -265,7 +267,12 @@ class Grid(object):
 		else:
 			print "Invalid move. Please select a move between 0 and 3, inclusive"
 	
-
+	#update alpha for every timestep
+	def timeStep(self):
+		temp = self.t
+		self.t += 1
+		self.alpha = 60.0/(59+temp)
+		print "alpha=", self.alpha
 	
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
