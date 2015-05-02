@@ -11,6 +11,7 @@ class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
 		self.utility = 0 #calculated with Bellman equation
+		self.qutility = 0 #for TD learning
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
 		self.intendedDirection = -1 #0 up, 1 right, 2 down, 3 left, -1 unassigned
@@ -53,8 +54,8 @@ class Grid(object):
 	numTotalIterations = 10
 	currRow = -1 #initially not in the maze
 	currCol = -1
-	t = 0
-	alpha = 60.0/59
+	#t = 0
+	#alpha = 60.0/59
 	Ne = 5
 	RPlus = 1
 
@@ -219,65 +220,66 @@ class Grid(object):
 		self.currRow = in_row
 		self.currCol = in_col
 		
-	def move(self, in_move):
-		#have not yet set an initial position
-		if(self.currRow==-1 or self.currCol==-1):
-			print "Please call setCurrentPosition(row, col)"
-		#0 is up, 1 is right, 2 is down, 3 is left (like a clock)
-		if(in_move==0):
-			if(self.currRow-1 < 0):
-				print "Cannot move up, out of bounds. Staying put."
-			elif(self.grid[self.currRow-1][self.currCol].isWall()==True):
-				print "Cannot move up, wall above. Staying put."
-			#make the move
-			else:
-				print "Moving up from(", self.currRow, ",", self.currCol, ")",
-				self.grid[self.currRow][self.currCol].currPos = False
-				self.currRow -= 1
-				print "to (", self.currRow, ",", self.currCol, ")"
-				self.grid[self.currRow][self.currCol].currPos = True
-		elif(in_move==1):
-			if(self.currCol+1 > self.cols-1):
-				print "Cannot move right, out of bounds. Staying put"
-			elif(self.grid[self.currRow][self.currCol+1].isWall()==True):
-				print "Cannot move right, wall to the right. Staying put."
-			else:
-				print "Moving right from(", self.currRow, ",", self.currCol, ")",
-				self.grid[self.currRow][self.currCol].currPos = False
-				self.currCol += 1
-				print "to (", self.currRow, ",", self.currCol, ")"
-				self.grid[self.currRow][self.currCol].currPos = True
-		elif(in_move==2):
-			if(self.currRow+1 > self.rows-1):
-				print "Cannot move down, out of bounds. Staying put"
-			elif(self.grid[self.currRow+1][self.currCol].isWall()==True):
-				print "Cannot move down, wall below. Staying put."
-			else:
-				print "Moving down from(", self.currRow, ",", self.currCol, ")",
-				self.grid[self.currRow][self.currCol].currPos = False
-				self.currRow += 1
-				print "to (", self.currRow, ",", self.currCol, ")"
-				self.grid[self.currRow][self.currCol].currPos = True
-		elif(in_move==3):
-			if(self.currCol-1 < 0):
-				print "Cannot move left, out of bounds. Staying put"
-			elif(self.grid[self.currRow][self.currCol-1].isWall()==True):
-				print "Cannot move left, wall to the left. Staying put."
-			else:
-				print "Moving left from(", self.currRow, ",", self.currCol, ")",
-				self.grid[self.currRow][self.currCol].currPos = False
-				self.currCol -= 1
-				print "to (", self.currRow, ",", self.currCol, ")"
-				self.grid[self.currRow][self.currCol].currPos = True
-		else:
-			print "Invalid move. Please select a move between 0 and 3, inclusive"
+	# def move(self, in_move):
+	# 	#have not yet set an initial position
+	# 	if(self.currRow==-1 or self.currCol==-1):
+	# 		print "Please call setCurrentPosition(row, col)"
+	# 	#0 is up, 1 is right, 2 is down, 3 is left (like a clock)
+	# 	if(in_move==0):
+	# 		if(self.currRow-1 < 0):
+	# 			print "Cannot move up, out of bounds. Staying put."
+	# 		elif(self.grid[self.currRow-1][self.currCol].isWall()==True):
+	# 			print "Cannot move up, wall above. Staying put."
+	# 		#make the move
+	# 		else:
+	# 			print "Moving up from(", self.currRow, ",", self.currCol, ")",
+	# 			self.grid[self.currRow][self.currCol].currPos = False
+	# 			self.currRow -= 1
+	# 			print "to (", self.currRow, ",", self.currCol, ")"
+	# 			self.grid[self.currRow][self.currCol].currPos = True
+	# 	elif(in_move==1):
+	# 		if(self.currCol+1 > self.cols-1):
+	# 			print "Cannot move right, out of bounds. Staying put"
+	# 		elif(self.grid[self.currRow][self.currCol+1].isWall()==True):
+	# 			print "Cannot move right, wall to the right. Staying put."
+	# 		else:
+	# 			print "Moving right from(", self.currRow, ",", self.currCol, ")",
+	# 			self.grid[self.currRow][self.currCol].currPos = False
+	# 			self.currCol += 1
+	# 			print "to (", self.currRow, ",", self.currCol, ")"
+	# 			self.grid[self.currRow][self.currCol].currPos = True
+	# 	elif(in_move==2):
+	# 		if(self.currRow+1 > self.rows-1):
+	# 			print "Cannot move down, out of bounds. Staying put"
+	# 		elif(self.grid[self.currRow+1][self.currCol].isWall()==True):
+	# 			print "Cannot move down, wall below. Staying put."
+	# 		else:
+	# 			print "Moving down from(", self.currRow, ",", self.currCol, ")",
+	# 			self.grid[self.currRow][self.currCol].currPos = False
+	# 			self.currRow += 1
+	# 			print "to (", self.currRow, ",", self.currCol, ")"
+	# 			self.grid[self.currRow][self.currCol].currPos = True
+	# 	elif(in_move==3):
+	# 		if(self.currCol-1 < 0):
+	# 			print "Cannot move left, out of bounds. Staying put"
+	# 		elif(self.grid[self.currRow][self.currCol-1].isWall()==True):
+	# 			print "Cannot move left, wall to the left. Staying put."
+	# 		else:
+	# 			print "Moving left from(", self.currRow, ",", self.currCol, ")",
+	# 			self.grid[self.currRow][self.currCol].currPos = False
+	# 			self.currCol -= 1
+	# 			print "to (", self.currRow, ",", self.currCol, ")"
+	# 			self.grid[self.currRow][self.currCol].currPos = True
+	# 	else:
+	# 		print "Invalid move. Please select a move between 0 and 3, inclusive"
 	
-	#update alpha for every timestep
-	def timeStep(self):
-		temp = self.t
-		self.t += 1
-		self.alpha = 60.0/(59+temp)
-		print "alpha=", self.alpha
+
+	# #update alpha for every timestep
+	# def timeStep(self):
+	# 	temp = self.t
+	# 	self.t += 1
+	# 	self.alpha = 60.0/(59+temp)
+	# 	print "alpha=", self.alpha
 	
 
 	def TDLearning(self, in_row, in_col):
@@ -285,24 +287,37 @@ class Grid(object):
 		def getAction(in_row, in_col):
 
 			def fun(in_row, in_col, candidate_action):
-				if(self.grid[in_row][in_col].actions[candidate_action] > self.Ne):
+				currCell = self.grid[in_row][in_col]
+				if(currCell.actions[candidate_action] > self.Ne):
 					return self.RPlus
 				else:
 					if(candidate_action==0): #candidate action up
 						if(in_row-1 < 0):
-							return rewardFunction
+							if(currCell.value!=0):
+								return currCell.value
+							else:
+								return rewardFunction
 						tempCell = self.grid[in_row-1][in_col]
 					elif(candidate_action==1): #candidate action right
 						if(in_col+1 > self.cols-1):
-							return rewardFunction
+							if(currCell.value!=0):
+								return currCell.value
+							else:
+								return rewardFunction
 						tempCell = self.grid[in_row][in_col+1]
 					elif(candidate_action==2): #candidate action down
 						if(in_row + 1 > self.rows+1):
-							return rewardFunction
+							if(currCell.value!=0):
+								return currCell.value
+							else:
+								return rewardFunction
 						tempCell = self.grid[in_row+1][in_col]
 					else: #candidate action left
 						if(in_col-1 < 0):
-							return rewardFunction
+							if(currCell.value!=0):
+								return currCell.value
+							else:
+								return rewardFunction
 						tempCell = self.grid[in_row][in_col]
 
 					if(tempCell.isWall()==True): #wall
@@ -321,11 +336,53 @@ class Grid(object):
 			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
 			return temp
 
+		def QSA(in_row, in_col, candidate_move):
+			curCell = self.grid[in_row][in_col]
+			#up
+			if(candidate_move==0):
+				candidateCell = self.grid[in_row-1][in_col]
+				#if moving up is not viable
+				if(in_row-1<0 or candidateCell.isWall()==True):
+					if(currCell.value!=0):
+						return currCell.value
+					else:
+						return rewardFunction
+				else:
+					if(candidateCell.value!=0):
+						return candidateCell.value
+					else:
+						return rewardFunction
 
-		
+		def QSAP(in_row, in_col, candidate_move):
+			currCell = self.grid[in_row][in_col]
+			if(candidate_move==0):
+				if(in_row-1<0):
+					if(currCell.value!=0):
+						return currCell.value
+					else:
+						return rewardFunction
+				else:
+					upVal = QSA(in_row-1, in_col, 0) 
+					rightVal = QSA(in_row, in_col+1, 1)
+					downVal = QSA(in_row+1, in_col, 2)
+					leftVal = QSA(in_row, in_col-1, 3)
+					return max(upVal, rightVal, downVal, leftVal)
+
+
+		def TDHelper(qutil, in_row, in_col, t, alpha): #alpha is floating point number
+
+
+			#recursive calls to get QSPAP
+			upVal = QSAP(in_row, in_col, 0)
+			rightVal = QSAP(in_row, in_col, 1)
+			downVal = QSAP(in_row, in_col, 2)
+			leftVal = QSAP(in_row, in_col 3)
+			QSPAP = max(upVal, rightVal, downVal, upVal) #QSPAP = most optimal QSAP
+			retval += float(alpha)*(rewardFunction + discountFactor*QSPAP-qutil)
+			return retVal
+
 		action = getAction(in_row, in_col) #get the action
-		print "action:", action
-
+		#print "action:", action
 
 
 	def __init__(self, filename_grid, num_iterations):
