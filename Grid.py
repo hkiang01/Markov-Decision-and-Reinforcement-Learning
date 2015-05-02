@@ -337,21 +337,59 @@ class Grid(object):
 			return temp
 
 		def QSA(in_row, in_col, candidate_move):
-			curCell = self.grid[in_row][in_col]
-			#up
-			if(candidate_move==0):
-				candidateCell = self.grid[in_row-1][in_col]
-				#if moving up is not viable
-				if(in_row-1<0 or candidateCell.isWall()==True):
-					if(currCell.value!=0):
-						return currCell.value
-					else:
-						return rewardFunction
+			currCell = self.grid[in_row][in_col]
+			
+    		col = in_col+round(math.sin(math.radians(candidate_action*90))) 
+			row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
+
+			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
+				if(currCell.value!=0):
+					return currCell.value
 				else:
-					if(candidateCell.value!=0):
-						return candidateCell.value
-					else:
-						return rewardFunction
+					return rewardFunction
+			
+			candidateCell = self.grid[row][col]
+			#candidate cell is wall
+			if(candidateCell.isWall()==True):
+				#look at the current cell
+				if(currCell.value!=0):
+					return currCell.value
+				else:
+					return rewardFunction
+			#can move to candidate cell
+			if(candidateCell.value!=0):
+				return candidateCell.value
+			else:
+				return rewardFunction
+
+			# #up
+			# if(candidate_move==0):
+			# 	#if moving up is out of bounds
+			# 	if(in_row-1<0):
+			# 		if(currCell.value!=0):
+			# 			return currCell.value
+			# 		else:
+			# 			return rewardFunction
+			# 	candidateCell = self.grid[in_row-1][in_col]
+			# #right
+			# if(candidate_move==1):
+			# 	#if moving right is out of bounds
+			# 	if(in_col+1):
+
+
+		    #GENERAL CASE FOR VALID MOVES
+			# #candidate cell is wall
+			# if(candidateCell.isWall()==True):
+			# 	#look at the current cell
+			# 	if(currCell.value!=0):
+			# 		return currCell.value
+			# 	else:
+			# 		return rewardFunction
+			# #can move to candidate cell
+			# if(candidateCell.value!=0):
+			# 	return candidateCell.value
+			# else:
+			# 	return rewardFunction
 
 		def QSAP(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
@@ -370,7 +408,6 @@ class Grid(object):
 
 
 		def TDHelper(qutil, in_row, in_col, t, alpha): #alpha is floating point number
-
 
 			#recursive calls to get QSPAP
 			upVal = QSAP(in_row, in_col, 0)
