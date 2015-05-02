@@ -288,10 +288,10 @@ class Grid(object):
 		def QSA(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
 			
-			col = in_col+round(math.sin(math.radians(candidate_action*90))) 
-    		row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
+			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
+			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 
-    		if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
+			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
 				if(currCell.value!=0):
 					return currCell.value
 				return rewardFunction
@@ -341,8 +341,8 @@ class Grid(object):
 
 		def QSAP(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
-			col = in_col+round(math.sin(math.radians(candidate_action*90))) 
-			row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
+			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
+			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
 				if(currCell.value!=0):
 					return currCell.value
@@ -413,13 +413,13 @@ class Grid(object):
 			#recursive calls to get QSPAP
 			t = len(self.grid[in_row][in_col].qutility) #increments t
 			alpha = float(60)/(59+t)
-			retval = qutil
+			retVal = qutil
 			upVal = QSAP(in_row, in_col, 0)
 			rightVal = QSAP(in_row, in_col, 1)
 			downVal = QSAP(in_row, in_col, 2)
-			leftVal = QSAP(in_row, in_col 3)
+			leftVal = QSAP(in_row, in_col, 3)
 			QSPAP = max(upVal, rightVal, downVal, upVal) #QSPAP = most optimal QSAP
-			retval += float(alpha)*(rewardFunction + discountFactor*QSPAP-qutil)
+			retVal += float(alpha)*(rewardFunction + discountFactor*QSPAP-qutil)
 			return retVal
 
 		action = getAction(in_row, in_col) #get the action

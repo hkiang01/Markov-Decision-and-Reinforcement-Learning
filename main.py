@@ -24,6 +24,4 @@ for iterations in xrange(5, 0, -5):
 	my_grid.printGrid()
 	my_grid.TDLearning(3, 2)
 	
-	for i in xrange(0, 5):
-		my_grid.timeStep()
 
