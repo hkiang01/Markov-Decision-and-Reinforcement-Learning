@@ -20,10 +20,7 @@ class Cell(object):
 		self.probLeft = 0.0
 		#how many times we have taken a certain action from this cell (state)
 		#see "Incorporating exploration" (slide 12) in lecture 17 (Reinforcement Learning)
-		self.actionUp = 0
-		self.actionRight = 0
-		self.actionDown = 0
-		self.actionLeft = 0
+		self.actions = [0,0,0,0]
 		self.currPos = False
 		
 	#getters
@@ -58,7 +55,9 @@ class Grid(object):
 	currCol = -1
 	t = 0
 	alpha = 60.0/59
-	
+	Ne = 5
+	RPlus = 1
+
 	def parseGrid(self, filename):
 		print "parsing grid"
 		f = open(filename, "r")
@@ -139,7 +138,7 @@ class Grid(object):
 
 			temp = max(uUtil, rUtil, dUtil, lUtil)
 			if(temp <= conversionThreshold):
-				return 0 #no contribution if below threshold
+				return temp #no contribution if below threshold
 			else:
 				return temp
 			
@@ -281,7 +280,52 @@ class Grid(object):
 		print "alpha=", self.alpha
 	
 
-	#def TDLearning(self, in_row, in_col):
+	def TDLearning(self, in_row, in_col):
+
+		def getAction(in_row, in_col):
+
+			def fun(in_row, in_col, candidate_action):
+				if(self.grid[in_row][in_col].actions[candidate_action] > self.Ne):
+					return self.RPlus
+				else:
+					if(candidate_action==0): #candidate action up
+						if(in_row-1 < 0):
+							return rewardFunction
+						tempCell = self.grid[in_row-1][in_col]
+					elif(candidate_action==1): #candidate action right
+						if(in_col+1 > self.cols-1):
+							return rewardFunction
+						tempCell = self.grid[in_row][in_col+1]
+					elif(candidate_action==2): #candidate action down
+						if(in_row + 1 > self.rows+1):
+							return rewardFunction
+						tempCell = self.grid[in_row+1][in_col]
+					else: #candidate action left
+						if(in_col-1 < 0):
+							return rewardFunction
+						tempCell = self.grid[in_row][in_col]
+
+					if(tempCell.isWall()==True): #wall
+						return rewardFunction
+					if(tempCell.value!=0):
+						return tempCell.value
+					else:
+						return rewardFunction
+
+			candidateActions = [0.0,0.0,0.0,0.0]
+			candidateActions[0] = fun(in_row, in_col, 0) #up call
+			candidateActions[1] = fun(in_row, in_col, 1) #right call
+			candidateActions[2] = fun(in_row, in_col, 2) #down call
+			candidateActions[3] = fun(in_row, in_col, 3) #left call
+			temp = candidateActions.index(max(candidateActions))
+			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
+			return temp
+
+
+		
+		action = getAction(in_row, in_col) #get the action
+		print "action:", action
+
 
 
 	def __init__(self, filename_grid, num_iterations):
