@@ -11,7 +11,7 @@ class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
 		self.utility = 0 #calculated with Bellman equation
-		self.qutility = 0 #for TD learning
+		self.qutility = [float(in_value)] #for TD learning
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
 		self.intendedDirection = -1 #0 up, 1 right, 2 down, 3 left, -1 unassigned
@@ -21,7 +21,7 @@ class Cell(object):
 		self.probLeft = 0.0
 		#how many times we have taken a certain action from this cell (state)
 		#see "Incorporating exploration" (slide 12) in lecture 17 (Reinforcement Learning)
-		self.actions = [0,0,0,0]
+		self.actions = [0,0,0,0] #number of times gone up, right, down, left
 		self.currPos = False
 		
 	#getters
@@ -57,7 +57,7 @@ class Grid(object):
 	#t = 0
 	#alpha = 60.0/59
 	Ne = 5
-	RPlus = 1
+	RPlus = 1 #most optimal estimate DOUBLE CHECK
 
 	def parseGrid(self, filename):
 		print "parsing grid"
@@ -284,58 +284,6 @@ class Grid(object):
 
 	def TDLearning(self, in_row, in_col):
 
-		def getAction(in_row, in_col):
-
-			def fun(in_row, in_col, candidate_action):
-				currCell = self.grid[in_row][in_col]
-				if(currCell.actions[candidate_action] > self.Ne):
-					return self.RPlus
-				else:
-					if(candidate_action==0): #candidate action up
-						if(in_row-1 < 0):
-							if(currCell.value!=0):
-								return currCell.value
-							else:
-								return rewardFunction
-						tempCell = self.grid[in_row-1][in_col]
-					elif(candidate_action==1): #candidate action right
-						if(in_col+1 > self.cols-1):
-							if(currCell.value!=0):
-								return currCell.value
-							else:
-								return rewardFunction
-						tempCell = self.grid[in_row][in_col+1]
-					elif(candidate_action==2): #candidate action down
-						if(in_row + 1 > self.rows+1):
-							if(currCell.value!=0):
-								return currCell.value
-							else:
-								return rewardFunction
-						tempCell = self.grid[in_row+1][in_col]
-					else: #candidate action left
-						if(in_col-1 < 0):
-							if(currCell.value!=0):
-								return currCell.value
-							else:
-								return rewardFunction
-						tempCell = self.grid[in_row][in_col]
-
-					if(tempCell.isWall()==True): #wall
-						return rewardFunction
-					if(tempCell.value!=0):
-						return tempCell.value
-					else:
-						return rewardFunction
-
-			candidateActions = [0.0,0.0,0.0,0.0]
-			candidateActions[0] = fun(in_row, in_col, 0) #up call
-			candidateActions[1] = fun(in_row, in_col, 1) #right call
-			candidateActions[2] = fun(in_row, in_col, 2) #down call
-			candidateActions[3] = fun(in_row, in_col, 3) #left call
-			temp = candidateActions.index(max(candidateActions))
-			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
-			return temp
-
 		def QSA(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
 			
@@ -393,23 +341,79 @@ class Grid(object):
 
 		def QSAP(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
-			if(candidate_move==0):
-				if(in_row-1<0):
-					if(currCell.value!=0):
-						return currCell.value
-					else:
-						return rewardFunction
+			col = in_col+round(math.sin(math.radians(candidate_action*90))) 
+			row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
+			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
+				if(currCell.value!=0):
+					return currCell.value
 				else:
-					upVal = QSA(in_row-1, in_col, 0) 
-					rightVal = QSA(in_row, in_col+1, 1)
-					downVal = QSA(in_row+1, in_col, 2)
-					leftVal = QSA(in_row, in_col-1, 3)
-					return max(upVal, rightVal, downVal, leftVal)
+					return rewardFunction
+			
+			upVal = QSA(row, col, 0)
+			rightVal = QSA(row, col, 1)
+			downVal = QSA(row, col, 2)
+			leftVal = QSA(row, col, 3)
+			return max(upVal, rightVal, downVal, leftVal)
+		
+		def getAction(in_row, in_col):
 
+			def fun(in_row, in_col, candidate_action):
+				currCell = self.grid[in_row][in_col]
+				if(currCell.actions[candidate_action] > self.Ne):
+					return self.RPlus
+				else:
+					return QSAP(in_row, in_col, candidate_action)
+					# if(candidate_action==0): #candidate action up
+					# 	if(in_row-1 < 0):
+					# 		if(currCell.value!=0):
+					# 			return currCell.value
+					# 		else:
+					# 			return rewardFunction
+					# 	tempCell = self.grid[in_row-1][in_col]
+					# elif(candidate_action==1): #candidate action right
+					# 	if(in_col+1 > self.cols-1):
+					# 		if(currCell.value!=0):
+					# 			return currCell.value
+					# 		else:
+					# 			return rewardFunction
+					# 	tempCell = self.grid[in_row][in_col+1]
+					# elif(candidate_action==2): #candidate action down
+					# 	if(in_row + 1 > self.rows+1):
+					# 		if(currCell.value!=0):
+					# 			return currCell.value
+					# 		else:
+					# 			return rewardFunction
+					# 	tempCell = self.grid[in_row+1][in_col]
+					# else: #candidate action left
+					# 	if(in_col-1 < 0):
+					# 		if(currCell.value!=0):
+					# 			return currCell.value
+					# 		else:
+					# 			return rewardFunction
+					# 	tempCell = self.grid[in_row][in_col]
 
-		def TDHelper(qutil, in_row, in_col, t, alpha): #alpha is floating point number
+					# if(tempCell.isWall()==True): #wall
+					# 	return rewardFunction
+					# if(tempCell.value!=0):
+					# 	return tempCell.value
+					# else:
+					# 	return rewardFunction
+
+			candidateActions = [0.0,0.0,0.0,0.0]
+			candidateActions[0] = fun(in_row, in_col, 0) #up call
+			candidateActions[1] = fun(in_row, in_col, 1) #right call
+			candidateActions[2] = fun(in_row, in_col, 2) #down call
+			candidateActions[3] = fun(in_row, in_col, 3) #left call
+			temp = candidateActions.index(max(candidateActions))
+			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
+			return temp
+
+		def TDHelper(qutil, in_row, in_col): #alpha is floating point number
 
 			#recursive calls to get QSPAP
+			t = len(self.grid[in_row][in_col].qutility) #increments t
+			alpha = float(60)/(59+t)
+			retval = qutil
 			upVal = QSAP(in_row, in_col, 0)
 			rightVal = QSAP(in_row, in_col, 1)
 			downVal = QSAP(in_row, in_col, 2)
@@ -419,6 +423,8 @@ class Grid(object):
 			return retVal
 
 		action = getAction(in_row, in_col) #get the action
+		currCell = self.grid[in_row][in_col]
+		currCell.qutility.append(TDHelper(currCell.qutility[-1], in_row, in_col))
 		#print "action:", action
 
 
