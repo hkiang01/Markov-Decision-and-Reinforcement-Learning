@@ -3,6 +3,7 @@ discountFactor = 0.99
 rewardFunction = -0.04
 intendedDirectionLikelihood = 0.8
 rightAngleLikelihood = 0.1
+conversionThreshold = 0.03271627750388923
 
 #a C-like struct for a cell in the maze
 #resource: http://stackoverflow.com/questions/35988/c-like-structures-in-python
@@ -131,11 +132,16 @@ class Grid(object):
 			else:
 				utility += rewardFunction
 			numIterations -= 1
-			uUtil = calcIntendedDirectionHelper(self, row-1, col, numIterations, utility)
-			rUtil = calcIntendedDirectionHelper(self, row, col+1, numIterations, utility)
-			dUtil = calcIntendedDirectionHelper(self, row+1, col, numIterations, utility)
-			lUtil = calcIntendedDirectionHelper(self, row, col-1, numIterations, utility)
-			return max(uUtil, rUtil, dUtil, lUtil)
+			uUtil = discountFactor*calcIntendedDirectionHelper(self, row-1, col, numIterations, utility)
+			rUtil = discountFactor*calcIntendedDirectionHelper(self, row, col+1, numIterations, utility)
+			dUtil = discountFactor*calcIntendedDirectionHelper(self, row+1, col, numIterations, utility)
+			lUtil = discountFactor*calcIntendedDirectionHelper(self, row, col-1, numIterations, utility)
+
+			temp = max(uUtil, rUtil, dUtil, lUtil)
+			if(temp <= conversionThreshold):
+				return 0 #no contribution if below threshold
+			else:
+				return temp
 			
 	
 		uUtil = calcIntendedDirectionHelper(self, row-1, col, self.numTotalIterations, 0)
@@ -274,6 +280,10 @@ class Grid(object):
 		self.alpha = 60.0/(59+temp)
 		print "alpha=", self.alpha
 	
+
+	#def TDLearning(self, in_row, in_col):
+
+
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
 		self.numTotalIterations = num_iterations
