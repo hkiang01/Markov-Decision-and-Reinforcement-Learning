@@ -1,3 +1,4 @@
+import math
 
 discountFactor = 0.99
 rewardFunction = -0.04
@@ -287,16 +288,15 @@ class Grid(object):
 		def QSA(in_row, in_col, candidate_move):
 			currCell = self.grid[in_row][in_col]
 			
-    		col = in_col+round(math.sin(math.radians(candidate_action*90))) 
-			row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
+			col = in_col+round(math.sin(math.radians(candidate_action*90))) 
+    		row = in_row+round(math.sin(math.radians(candidate_action*90-90)))
 
-			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
+    		if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
 				if(currCell.value!=0):
 					return currCell.value
-				else:
-					return rewardFunction
-			
-			candidateCell = self.grid[row][col]
+				return rewardFunction
+
+			candidateCell=self.grid[row][col]
 			#candidate cell is wall
 			if(candidateCell.isWall()==True):
 				#look at the current cell
