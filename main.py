@@ -22,6 +22,7 @@ for iterations in xrange(5, 0, -5):
 	my_grid.resetGridUtilities()
 	my_grid.setCurrentPosition(3,2)
 	my_grid.printGrid()
+	print my_grid.grid[3][2].qutility
 	my_grid.TDLearning(3, 2)
-	
+	print my_grid.grid[3][2].qutility
 

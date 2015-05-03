@@ -203,7 +203,7 @@ class Grid(object):
 			for col in row:
 					print col.utility, "\t",
 			print "\n",
-	
+
 	#reset grid utitlies 
 	def resetGridUtilities(self):
 		for row in self.grid:
@@ -224,12 +224,25 @@ class Grid(object):
 	def TDLearning(self, in_row, in_col):
 
 		def QSA(in_row, in_col, candidate_move):
+			print "QSA...",
+
+			if(candidate_move==0):
+				print "candidate_move=up"
+			elif(candidate_move==1):
+				print "candidate_move=right"
+			elif(candidate_move==2):
+				print "candidate_move=down"
+			elif(candidate_move==3):
+				print "candidate_move=left"
+			else:
+				print "Error: invalid candidate_move for QSA"
+
 			currCell = self.grid[in_row][in_col]
-			
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
+				print "out of bounds"
 				if(currCell.value!=0):
 					return currCell.value
 				return rewardFunction
@@ -237,15 +250,21 @@ class Grid(object):
 			candidateCell=self.grid[row][col]
 			#candidate cell is wall
 			if(candidateCell.isWall()==True):
+				print "wall",
 				#look at the current cell
 				if(currCell.value!=0):
+					print "returning value"
 					return currCell.value
 				else:
+					print "returning reward function"
 					return rewardFunction
 			#can move to candidate cell
-			if(candidateCell.value!=0):
+			print "valid move",
+			if(candidateCell.value!=0.0):
+				print "returning value"
 				return candidateCell.value
 			else:
+				print "returning reward function"
 				return rewardFunction
 
 		def QSAP(in_row, in_col, candidate_move):
@@ -259,25 +278,35 @@ class Grid(object):
 					return rewardFunction
 			
 			upVal = QSA(row, col, 0)
+			print "QSAP upVal", upVal
 			rightVal = QSA(row, col, 1)
+			print "QSAP rightVal", rightVal
 			downVal = QSA(row, col, 2)
+			print "QSAP downVal", downVal
 			leftVal = QSA(row, col, 3)
+			print "QSAP leftVal", leftVal
 			return max(upVal, rightVal, downVal, leftVal)
 		
 		def getAction(in_row, in_col):
-
 			def fun(in_row, in_col, candidate_action):
 				currCell = self.grid[in_row][in_col]
 				if(currCell.actions[candidate_action] > self.Ne):
+					print "fun condition met, returning reward function"
 					return self.RPlus
 				else:
+					print "fun condition not met, returning  QSAP"
 					return QSAP(in_row, in_col, candidate_action)
 
+			print "getting action..."
 			candidateActions = [0.0,0.0,0.0,0.0]
 			candidateActions[0] = fun(in_row, in_col, 0) #up call
+			print "getAction up value", candidateActions[0]
 			candidateActions[1] = fun(in_row, in_col, 1) #right call
+			print "getAction right value", candidateActions[1]
 			candidateActions[2] = fun(in_row, in_col, 2) #down call
+			print "getAction down value", candidateActions[2]
 			candidateActions[3] = fun(in_row, in_col, 3) #left call
+			print "getAction left value", candidateActions[3]
 			temp = candidateActions.index(max(candidateActions))
 			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
 			return temp
@@ -286,19 +315,30 @@ class Grid(object):
 
 			#recursive calls to get QSPAP
 			t = len(self.grid[in_row][in_col].qutility) #increments t
+			print "TDHelper t (timestep)", t
 			alpha = float(60)/(59+t)
-			respectiveal = qutil
+			print "TDHelper alpha", alpha
+			retVal = qutil
+			print "TDHelper qutil", qutil
 			upVal = QSAP(in_row, in_col, 0)
+			print "TDHelper upval", upVal
 			rightVal = QSAP(in_row, in_col, 1)
+			print "TDHelper rightval", rightVal
 			downVal = QSAP(in_row, in_col, 2)
+			print "TDHelper downVal", downVal
 			leftVal = QSAP(in_row, in_col, 3)
+			print "TDHelper leftVal", leftVal
 			QSPAP = max(upVal, rightVal, downVal, upVal) #QSPAP = most optimal QSAP
 			retVal += float(alpha)*(rewardFunction + discountFactor*QSPAP-qutil)
+			print "TDHelper retval", retVal
 			return retVal
 
+		print "TDLearning called on [", in_row, ",", in_col, "]"
 		action = getAction(in_row, in_col) #get the action
+		print "TDLearning action", action
+		print "\n"
 		currCell = self.grid[in_row][in_col]
-		currCell.qutility.append(TDHelper(currCell.qutility[-1], in_row, in_col))
+		currCell.qutility.append(TDHelper(currCell.qutility[-1], in_row, in_col)) #indexed by timestamp
 		#print "action:", action
 
 	def __init__(self, filename_grid, num_iterations):
