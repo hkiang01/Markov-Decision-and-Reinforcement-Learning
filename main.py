@@ -11,7 +11,7 @@ import sys
 #		col_counter += 1
 #	row_counter += 1
 	
-for iterations in xrange(5, 0, -5):
+for iterations in xrange(0, 100):
 	my_grid = Grid("grid.txt", iterations)
 	for col in xrange(0,my_grid.cols):
 		for row in xrange(0,my_grid.rows):
@@ -21,7 +21,7 @@ for iterations in xrange(5, 0, -5):
 	my_grid.printUtilities()
 	my_grid.setCurrentPosition(3,2)
 	my_grid.printGrid()
-	for k in xrange(0, 10000): #number of trials
+	for k in xrange(0, 100): #number of trials
 		for i in xrange(my_grid.rows-1, -1, -1):
 			for j in xrange(my_grid.cols-1, -1, -1):
 				#print my_grid.grid[i][j].qutility

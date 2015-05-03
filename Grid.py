@@ -11,7 +11,7 @@ conversionThreshold = 0.03271627750388923
 class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
-		self.utility = 0.0 #calculated with Bellman equation
+		self.utility = [float(in_value)] #calculated with Bellman equation
 		self.qutility = [float(in_value)] #for TD learning
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
@@ -43,7 +43,16 @@ class Cell(object):
 	def isCurrentPosition(self):
 		return self.currPos
 	
+	#for value iteration
 	def getFigure(self):
+		if(self.value!=0.0):
+			return self.value
+		if(self.qutility!=0):
+			return self.utility[-1]
+		return rewardFunction
+
+	#for TD Learning
+	def getQFigure(self):
 		if(self.value!=0.0):
 			return self.value
 		if(self.qutility!=0):
@@ -61,7 +70,8 @@ class Cell(object):
 	def calcRMSError(self):
 		the_sum = 0.0
 		for i in xrange (0, len(self.qutility)):
-			the_sum += pow(self.qutility[i] - self.utility, 2)
+			#assumes the last addition of utility from value iterationis the best utility
+			the_sum += pow(self.qutility[i] - self.utility[-1], 2)
 
 		self.RMSError = math.sqrt( 1/float(len(self.qutility)) * the_sum)
 
@@ -133,70 +143,133 @@ class Grid(object):
 		print "grid printed"
 	
 	def calcIntendedDirection(self, row, col):
-		
-		def calcIntendedDirectionHelper(self, row, col, numIterations, utility):
-			#out of bounds. same as wall
-			if(row < 0 or col < 0 or row > self.rows-1 or col > self.cols-1):
-				utility += rewardFunction
-				return utility
-			#wall, same as out of bounds
-			if(self.grid[row][col].isWall==True):
-				utility += rewardFunction
-				return utility
-			#last iteration
-			if(numIterations<=0):
-				return utility
-			if(self.grid[row][col].value!=0):
-				utility += self.grid[row][col].value
-			else:
-				utility += rewardFunction
-			numIterations -= 1
-			uUtil = discountFactor*calcIntendedDirectionHelper(self, row-1, col, numIterations, utility)
-			rUtil = discountFactor*calcIntendedDirectionHelper(self, row, col+1, numIterations, utility)
-			dUtil = discountFactor*calcIntendedDirectionHelper(self, row+1, col, numIterations, utility)
-			lUtil = discountFactor*calcIntendedDirectionHelper(self, row, col-1, numIterations, utility)
 
-			temp = max(uUtil, rUtil, dUtil, lUtil)
-			if(temp <= conversionThreshold):
-				return temp #no contribution if below threshold
-			else:
-				return temp
+		def calcIntendedDirectionHelper(self, in_row, in_col, candidate_move):
+			
+			currCell = self.grid[in_row][in_col]
+			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
+			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
+
+
+			if(row < 0 or row > self.rows-1 or col < 0 or col > self.cols-1):
+				print "invalid move"
+				return currCell.getFigure()
+
+			candidateCell = self.grid[row][col]
+			return candidateCell.getFigure()
+
+
+		if(row < 0 or row > self.rows-1 or col < 0 or col > self.cols-1):
+			print "calcIntendedDirection called on invalid cell, exiting"
+			return 0 #negative infinity or 0?
+
+		currCell = self.grid[row][col]
+
+		candidateDirections = [0.0,0.0,0.0,0.0]
+		candidateDirections[0] = calcIntendedDirectionHelper(self, row, col, 0) #up
+		candidateDirections[1] = calcIntendedDirectionHelper(self, row, col, 1) #right
+		candidateDirections[2] = calcIntendedDirectionHelper(self, row, col, 2) #down
+		candidateDirections[3] = calcIntendedDirectionHelper(self, row, col, 3) #left
+
+		best_index = candidateDirections.index(max(candidateDirections))
+		print "intendedDirection", best_index
+		currCell.intendedDirection = best_index
+		currCell.utility.append(candidateDirections[best_index])
+		print "(", col, ",", row, "): ", currCell.utility[-1]
+
+		if(currCell.intendedDirection==0):#up
+			#currCell.intendedDirection = 0
+			currCell.probUp = intendedDirectionLikelihood
+			currCell.probRight = rightAngleLikelihood
+			currCell.probDown = 0.0
+			currCell.probLeft = rightAngleLikelihood
+		elif(currCell.intendedDirection==1):#right
+			#currCell.intendedDirection = 1
+			currCell.probUp = rightAngleLikelihood
+			currCell.probRight = intendedDirectionLikelihood
+			currCell.probDown = rightAngleLikelihood
+			currCell.probLeft = 0.0
+		elif(currCell.intendedDirection==2):#down
+			#currCell.intendedDirection = 2
+			currCell.probUp = 0.0
+			currCell.probRight = rightAngleLikelihood
+			currCell.probDown = intendedDirectionLikelihood
+			currCell.probLeft = rightAngleLikelihood
+		elif(currCell.intendedDirection==3):#left
+			#currCell.intendedDirection = 3
+			currCell.probUp = rightAngleLikelihood
+			currCell.probRight = 0.0
+			currCell.probDown = rightAngleLikelihood
+			currCell.probLeft = intendedDirectionLikelihood
+		else:
+			print "you fucked up, invalid entry in cell's intendedDirection field" #this should never happen
+
+
+	# def calcIntendedDirectionOld(self, row, col):
+		
+	# 	def calcIntendedDirectionHelper(self, row, col, numIterations, utility):
+	# 		#out of bounds. same as wall
+	# 		if(row < 0 or col < 0 or row > self.rows-1 or col > self.cols-1):
+	# 			utility += rewardFunction
+	# 			return utility
+	# 		#wall, same as out of bounds
+	# 		if(self.grid[row][col].isWall==True):
+	# 			utility += rewardFunction
+	# 			return utility
+	# 		#last iteration
+	# 		if(numIterations<=0):
+	# 			return utility
+	# 		if(self.grid[row][col].value!=0):
+	# 			utility += self.grid[row][col].value
+	# 		else:
+	# 			utility += rewardFunction
+	# 		numIterations -= 1
+	# 		uUtil = discountFactor*calcIntendedDirectionHelper(self, row-1, col, numIterations, utility)
+	# 		rUtil = discountFactor*calcIntendedDirectionHelper(self, row, col+1, numIterations, utility)
+	# 		dUtil = discountFactor*calcIntendedDirectionHelper(self, row+1, col, numIterations, utility)
+	# 		lUtil = discountFactor*calcIntendedDirectionHelper(self, row, col-1, numIterations, utility)
+
+	# 		temp = max(uUtil, rUtil, dUtil, lUtil)
+	# 		if(temp <= conversionThreshold):
+	# 			return temp #no contribution if below threshold
+	# 		else:
+	# 			return temp
 			
 	
-		uUtil = calcIntendedDirectionHelper(self, row-1, col, self.numTotalIterations, 0)
-		rUtil = calcIntendedDirectionHelper(self, row, col+1, self.numTotalIterations, 0)
-		dUtil = calcIntendedDirectionHelper(self, row+1, col, self.numTotalIterations, 0)
-		lUtil = calcIntendedDirectionHelper(self, row, col-1, self.numTotalIterations, 0)
+	# 	uUtil = calcIntendedDirectionHelper(self, row-1, col, self.numTotalIterations, 0)
+	# 	rUtil = calcIntendedDirectionHelper(self, row, col+1, self.numTotalIterations, 0)
+	# 	dUtil = calcIntendedDirectionHelper(self, row+1, col, self.numTotalIterations, 0)
+	# 	lUtil = calcIntendedDirectionHelper(self, row, col-1, self.numTotalIterations, 0)
 		
-		temp = max(uUtil, rUtil, dUtil, lUtil)
+	# 	temp = max(uUtil, rUtil, dUtil, lUtil)
 		
-		if(uUtil==temp):#up
-			self.grid[row][col].intendedDirection = 0
-			self.grid[row][col].probUp = intendedDirectionLikelihood
-			self.grid[row][col].probRight = rightAngleLikelihood
-			self.grid[row][col].probDown = 0.0
-			self.grid[row][col].probLeft = rightAngleLikelihood
-		elif(rUtil==temp):#right
-			self.grid[row][col].intendedDirection = 1
-			self.grid[row][col].probUp = rightAngleLikelihood
-			self.grid[row][col].probRight = intendedDirectionLikelihood
-			self.grid[row][col].probDown = rightAngleLikelihood
-			self.grid[row][col].probLeft = 0.0
-		elif(dUtil==temp):#down
-			self.grid[row][col].intendedDirection = 2
-			self.grid[row][col].probUp = 0.0
-			self.grid[row][col].probRight = rightAngleLikelihood
-			self.grid[row][col].probDown = intendedDirectionLikelihood
-			self.grid[row][col].probLeft = rightAngleLikelihood
-		else:#left
-			self.grid[row][col].intendedDirection = 3
-			self.grid[row][col].probUp = rightAngleLikelihood
-			self.grid[row][col].probRight = 0.0
-			self.grid[row][col].probDown = rightAngleLikelihood
-			self.grid[row][col].probLeft = intendedDirectionLikelihood
+	# 	if(uUtil==temp):#up
+	# 		self.grid[row][col].intendedDirection = 0
+	# 		self.grid[row][col].probUp = intendedDirectionLikelihood
+	# 		self.grid[row][col].probRight = rightAngleLikelihood
+	# 		self.grid[row][col].probDown = 0.0
+	# 		self.grid[row][col].probLeft = rightAngleLikelihood
+	# 	elif(rUtil==temp):#right
+	# 		self.grid[row][col].intendedDirection = 1
+	# 		self.grid[row][col].probUp = rightAngleLikelihood
+	# 		self.grid[row][col].probRight = intendedDirectionLikelihood
+	# 		self.grid[row][col].probDown = rightAngleLikelihood
+	# 		self.grid[row][col].probLeft = 0.0
+	# 	elif(dUtil==temp):#down
+	# 		self.grid[row][col].intendedDirection = 2
+	# 		self.grid[row][col].probUp = 0.0
+	# 		self.grid[row][col].probRight = rightAngleLikelihood
+	# 		self.grid[row][col].probDown = intendedDirectionLikelihood
+	# 		self.grid[row][col].probLeft = rightAngleLikelihood
+	# 	else:#left
+	# 		self.grid[row][col].intendedDirection = 3
+	# 		self.grid[row][col].probUp = rightAngleLikelihood
+	# 		self.grid[row][col].probRight = 0.0
+	# 		self.grid[row][col].probDown = rightAngleLikelihood
+	# 		self.grid[row][col].probLeft = intendedDirectionLikelihood
 			
-		self.grid[row][col].utility = temp
-		print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
+	# 	self.grid[row][col].utility = temp
+	# 	print "(", col, ",", row, "): ", temp#self.grid[row][col].intendedDirection
 	
 	def printIntendedDirections(self):
 		print "printing directions..."
@@ -219,14 +292,14 @@ class Grid(object):
 	def printUtilities(self):
 		for row in self.grid:
 			for col in row:
-					print col.utility, "\t",
+					print col.utility[-1], "\t",
 			print "\n",
 
 	#reset grid utitlies 
 	def resetGridUtilities(self):
 		for row in self.grid:
 			for col in row:
-				col.utility = 0
+				col.utility = [0.0]
 	
 	def setCurrentPosition(self, in_row, in_col):
 		if(in_row < 0 or in_row > self.rows-1 or in_col < 0 or in_col > self.cols-1):
@@ -263,18 +336,18 @@ class Grid(object):
 
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
 				#print "out of bounds"
-				return currCell.getFigure()
+				return currCell.getQFigure()
 
 			candidateCell=self.grid[row][col]
 			#candidate cell is wall
 			if(candidateCell.isWall()==True):
 				#print "wall",
-				return currCell.getFigure()
+				return currCell.getQFigure()
 
 			#can move to candidate cell
 			#print "valid move",
 			if(candidateCell.value!=0.0):
-				return candidateCell.getFigure()
+				return candidateCell.getQFigure()
 
 		def QSAP(in_row, in_col, candidate_move):
 			#print "QSAP called on [", in_row, ",", in_col, "]", candidate_move
@@ -283,12 +356,12 @@ class Grid(object):
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
-				return currCell.getFigure()
+				return currCell.getQFigure()
 
 			candidateCell = self.grid[row][col]
 			if(candidateCell.isWall()):
 				#print "wall",
-				return currCell.getFigure()
+				return currCell.getQFigure()
 
 			upVal = QSA(row, col, 0)
 			#print "QSAP upVal", upVal
@@ -364,7 +437,7 @@ class Grid(object):
 				if(col.isWall()==True):
 					print "W\t",
 				else:
-					print col.utility, "\t",
+					print col.utility[-1], "\t",
 			print "\n",
 		print "utilities printed"
 
