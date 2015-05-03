@@ -47,7 +47,7 @@ class Cell(object):
 	def getFigure(self):
 		if(self.value!=0.0):
 			return self.value
-		if(self.qutility!=0):
+		if(self.qutility[-1]!=0):
 			return self.utility[-1]
 		return rewardFunction
 
@@ -55,7 +55,7 @@ class Cell(object):
 	def getQFigure(self):
 		if(self.value!=0.0):
 			return self.value
-		if(self.qutility!=0):
+		if(self.qutility[-1]!=0):
 			return self.qutility[-1]
 		return rewardFunction
 
@@ -144,19 +144,31 @@ class Grid(object):
 	
 	def calcIntendedDirection(self, row, col):
 
-		def calcIntendedDirectionHelper(self, in_row, in_col, candidate_move):
+		def calcIntendedDirectionHelper(self, in_row, in_col, candidate_move, num_iterations):
 			
+			if(num_iterations <= 0):
+				return 0
+			num_iterations -= 1
+
 			currCell = self.grid[in_row][in_col]
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 
-
 			if(row < 0 or row > self.rows-1 or col < 0 or col > self.cols-1):
-				print "invalid move"
+				#print "invalid move"
 				return currCell.getFigure()
 
 			candidateCell = self.grid[row][col]
-			return candidateCell.getFigure()
+			candidateDirections = [0.0,0.0,0.0,0.0]
+			candidateDirections[0] = discountFactor*calcIntendedDirectionHelper(self, row, col, 0, num_iterations) #up
+			candidateDirections[1] = discountFactor*calcIntendedDirectionHelper(self, row, col, 1, num_iterations) #right
+			candidateDirections[2] = discountFactor*calcIntendedDirectionHelper(self, row, col, 2, num_iterations) #down
+			candidateDirections[3] = discountFactor*calcIntendedDirectionHelper(self, row, col, 3, num_iterations) #left
+			temp = max(candidateDirections)
+			if(temp <= conversionThreshold):
+				return 0 #no contribution if below threshold
+			else:
+				return temp
 
 
 		if(row < 0 or row > self.rows-1 or col < 0 or col > self.cols-1):
@@ -166,13 +178,13 @@ class Grid(object):
 		currCell = self.grid[row][col]
 
 		candidateDirections = [0.0,0.0,0.0,0.0]
-		candidateDirections[0] = calcIntendedDirectionHelper(self, row, col, 0) #up
-		candidateDirections[1] = calcIntendedDirectionHelper(self, row, col, 1) #right
-		candidateDirections[2] = calcIntendedDirectionHelper(self, row, col, 2) #down
-		candidateDirections[3] = calcIntendedDirectionHelper(self, row, col, 3) #left
+		candidateDirections[0] = calcIntendedDirectionHelper(self, row, col, 0, self.numTotalIterations) #up
+		candidateDirections[1] = calcIntendedDirectionHelper(self, row, col, 1, self.numTotalIterations) #right
+		candidateDirections[2] = calcIntendedDirectionHelper(self, row, col, 2, self.numTotalIterations) #down
+		candidateDirections[3] = calcIntendedDirectionHelper(self, row, col, 3, self.numTotalIterations) #left
 
 		best_index = candidateDirections.index(max(candidateDirections))
-		print "intendedDirection", best_index
+		#print "intendedDirection", best_index
 		currCell.intendedDirection = best_index
 		currCell.utility.append(candidateDirections[best_index])
 		print "(", col, ",", row, "): ", currCell.utility[-1]
