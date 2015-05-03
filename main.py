@@ -11,7 +11,7 @@ import sys
 #		col_counter += 1
 #	row_counter += 1
 	
-for iterations in xrange(0, 5):
+for iterations in xrange(0, 10):
 	my_grid = Grid("grid.txt", iterations)
 	for col in xrange(0,my_grid.cols):
 		for row in xrange(0,my_grid.rows):

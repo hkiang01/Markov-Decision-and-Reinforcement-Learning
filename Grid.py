@@ -159,6 +159,13 @@ class Grid(object):
 				return currCell.getFigure()
 
 			candidateCell = self.grid[row][col]
+			if(candidateCell.isWall()):
+				return currCell.getFigure()
+			
+			#leave this commented out, every non-wall has a utility
+			# if(candidateCell.value!=0):
+			# 	return candidateCell.getFigure()
+
 			candidateDirections = [0.0,0.0,0.0,0.0]
 			candidateDirections[0] = discountFactor*calcIntendedDirectionHelper(self, row, col, 0, num_iterations) #up
 			candidateDirections[1] = discountFactor*calcIntendedDirectionHelper(self, row, col, 1, num_iterations) #right
