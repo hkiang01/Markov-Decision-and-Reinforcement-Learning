@@ -47,16 +47,16 @@ class Cell(object):
 	
 	#for value iteration
 	def getFigure(self):
-		if(self.value!=0.0):
-			return self.value
-		if(self.qutility[-1]!=0):
+		# if(self.value!=0.0):
+		# 	return self.value
+		if(self.utility[-1]!=0):
 			return self.utility[-1]
 		return rewardFunction
 
 	#for TD Learning
 	def getQFigure(self):
-		if(self.value!=0.0):
-			return self.value
+		# if(self.value!=0.0):
+		# 	return self.value
 		if(self.qutility[-1]!=0):
 			return self.qutility[-1]
 		return rewardFunction
@@ -203,7 +203,8 @@ class Grid(object):
 		#print "intendedDirection", best_index
 		currCell.intendedDirection = best_index
 		currCell.utility.append(candidateDirections[best_index])
-		print "(", col, ",", row, "): ", currCell.utility[-1]
+		if(currCell.isWall()==False):
+			print "(", col, ",", row, "): ", currCell.utility[-1]
 
 		if(currCell.intendedDirection==0):#up
 			#currCell.intendedDirection = 0
