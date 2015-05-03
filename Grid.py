@@ -307,7 +307,7 @@ class Grid(object):
 				currCell = self.grid[in_row][in_col]
 				#print currCell.actions[candidate_action], self.Ne
 				if(currCell.actions[candidate_action] > self.Ne):
-					print "fun condition met, returning reward function"
+					#print "fun condition met, returning reward function"
 					return self.RPlus
 				else:
 					#print "fun condition not met, returning  QSAP"
@@ -324,7 +324,7 @@ class Grid(object):
 			candidateActions[3] = fun(in_row, in_col, 3) #left call
 			#print "getAction left value", candidateActions[3]
 			temp = candidateActions.index(max(candidateActions))
-			print "candidateActions values", candidateActions[0], candidateActions[1], candidateActions[2], candidateActions[3]
+			#print "candidateActions values", candidateActions[0], candidateActions[1], candidateActions[2], candidateActions[3]
 			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
 			return temp
 
@@ -332,30 +332,30 @@ class Grid(object):
 
 			#recursive calls to get QSPAP
 			t = len(self.grid[in_row][in_col].qutility) #increments t
-			print "TDHelper t (timestep)", t
+			#print "TDHelper t (timestep)", t
 			alpha = float(60)/(59+t)
-			print "TDHelper alpha", alpha
+			#print "TDHelper alpha", alpha
 			retVal = float(qutil)
 			action = getAction(in_row, in_col) #get the action
-			print "action", action,
+			#print "action", action,
 			#print "TDHelper qutil", qutil
 			QSPAP = QSAP(in_row, in_col, action)
-			print "qutil", qutil, "QSPAP", QSPAP
+			#print "qutil", qutil, "QSPAP", QSPAP
 			retVal += alpha*(rewardFunction + discountFactor*QSPAP-qutil)
 			#print "TDHelper retval", retVal
 			return retVal
 
-		print "TDLearning called on [", in_row, ",", in_col, "]",
+		#print "TDLearning called on [", in_row, ",", in_col, "]",
 		if(in_row<0 or in_row > self.rows-1 or in_col<0 or in_col > self.cols-1):
-			print "TDLearning called out of bounds, exiting"
+			#print "TDLearning called out of bounds, exiting"
 			return
 
 		currCell = self.grid[in_row][in_col]
 		if(currCell.isWall()):
-			print "TD action called on wall, exiting"
+			#print "TD action called on wall, exiting"
 			return
 		currCell.qutility.append(TDHelper(currCell.qutility[-1], in_row, in_col)) #indexed by timestamp
-		print "new qutility:", currCell.qutility[-1]
+		#print "new qutility:", currCell.qutility[-1]
 
 	def printUtilities(self):
 		print "printing utilities..."
@@ -369,7 +369,7 @@ class Grid(object):
 		print "utilities printed"
 
 	def printQUtilities(self):
-		print "printing utilities..."
+		print "printing qutilities..."
 		for row in self.grid:
 			for col in row:
 				if(col.isWall()==True):

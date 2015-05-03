@@ -21,16 +21,17 @@ for iterations in xrange(5, 0, -5):
 	my_grid.printUtilities()
 	my_grid.setCurrentPosition(3,2)
 	my_grid.printGrid()
-	for i in xrange(0,my_grid.rows):
-		for j in xrange(0, my_grid.cols):
-			for k in xrange(0, 10): #number of trials
-				print my_grid.grid[i][j].qutility
+	for k in xrange(0, 10000): #number of trials
+		for i in xrange(my_grid.rows-1, -1, -1):
+			for j in xrange(my_grid.cols-1, -1, -1):
+				#print my_grid.grid[i][j].qutility
 				my_grid.TDLearning(i, j)
-				print my_grid.grid[i][j].qutility
+				#print my_grid.grid[i][j].qutility
 
 	for i in xrange(0,my_grid.rows):
 		for j in xrange(0, my_grid.cols):
 			my_grid.grid[i][j].calcRMSError()
-			
+
+	my_grid.printUtilities()			
 	my_grid.printQUtilities()
 	my_grid.printRMSErrors()
