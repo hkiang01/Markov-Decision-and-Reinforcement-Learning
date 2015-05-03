@@ -11,11 +11,12 @@ conversionThreshold = 0.03271627750388923
 class Cell(object):
 	def __init__(self, in_value, in_wall, in_start):
 		self.value = in_value #a float
-		self.utility = 0 #calculated with Bellman equation
+		self.utility = 0.0 #calculated with Bellman equation
 		self.qutility = [float(in_value)] #for TD learning
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
 		self.intendedDirection = -1 #0 up, 1 right, 2 down, 3 left, -1 unassigned
+		self.qIntedndedDirection = -1
 		self.probUp = 0.0
 		self.probRight = 0.0
 		self.probDown = 0.0
@@ -24,6 +25,7 @@ class Cell(object):
 		#see "Incorporating exploration" (slide 12) in lecture 17 (Reinforcement Learning)
 		self.actions = [0,0,0,0] #number of times gone up, right, down, left
 		self.currPos = False
+		self.RMSError = 0.0
 		
 	#getters
 	def getValue(self):
@@ -41,12 +43,28 @@ class Cell(object):
 	def isCurrentPosition(self):
 		return self.currPos
 	
+	def getFigure(self):
+		if(self.value!=0.0):
+			return self.value
+		if(self.qutility!=0):
+			return self.qutility[-1]
+		return rewardFunction
+
 	#setters
 	def setValue(self, in_value):
 		self.value = in_value
 		
 	def setUtility(self, in_utility):
 		self.utility = in_utility
+
+	#other methods
+	def calcRMSError(self):
+		the_sum = 0.0
+		for i in xrange (0, len(self.qutility)):
+			the_sum += pow(self.qutility[i] - self.utility, 2)
+
+		self.RMSError = math.sqrt( 1/float(len(self.qutility)) * the_sum)
+
 
 class Grid(object):
 	grid = [] # a 2d list of cells
@@ -224,90 +242,89 @@ class Grid(object):
 	def TDLearning(self, in_row, in_col):
 
 		def QSA(in_row, in_col, candidate_move):
-			print "QSA...",
+			#print "QSA called on [", in_row, ",", in_col, "]", candidate_move
 
-			if(candidate_move==0):
-				print "candidate_move=up"
-			elif(candidate_move==1):
-				print "candidate_move=right"
-			elif(candidate_move==2):
-				print "candidate_move=down"
-			elif(candidate_move==3):
-				print "candidate_move=left"
-			else:
-				print "Error: invalid candidate_move for QSA"
+			# if(candidate_move==0):
+			# 	print "candidate_move=up"
+			# elif(candidate_move==1):
+			# 	print "candidate_move=right"
+			# elif(candidate_move==2):
+			# 	print "candidate_move=down"
+			# elif(candidate_move==3):
+			# 	print "candidate_move=left"
+			# else:
+			# 	print "Error: invalid candidate_move for QSA"
 
 			currCell = self.grid[in_row][in_col]
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 
+			#print "[", row, ",", col, "]"
+
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
-				print "out of bounds"
-				if(currCell.value!=0):
-					return currCell.value
-				return rewardFunction
+				#print "out of bounds"
+				return currCell.getFigure()
 
 			candidateCell=self.grid[row][col]
 			#candidate cell is wall
 			if(candidateCell.isWall()==True):
-				print "wall",
-				#look at the current cell
-				if(currCell.value!=0):
-					print "returning value"
-					return currCell.value
-				else:
-					print "returning reward function"
-					return rewardFunction
+				#print "wall",
+				return currCell.getFigure()
+
 			#can move to candidate cell
-			print "valid move",
+			#print "valid move",
 			if(candidateCell.value!=0.0):
-				print "returning value"
-				return candidateCell.value
-			else:
-				print "returning reward function"
-				return rewardFunction
+				return candidateCell.getFigure()
 
 		def QSAP(in_row, in_col, candidate_move):
+			#print "QSAP called on [", in_row, ",", in_col, "]", candidate_move
+
 			currCell = self.grid[in_row][in_col]
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
 			if(row<0 or row > self.rows-1 or col<0 or col > self.cols-1):
-				if(currCell.value!=0):
-					return currCell.value
-				else:
-					return rewardFunction
-			
+				return currCell.getFigure()
+
+			candidateCell = self.grid[row][col]
+			if(candidateCell.isWall()):
+				#print "wall",
+				return currCell.getFigure()
+
 			upVal = QSA(row, col, 0)
-			print "QSAP upVal", upVal
+			#print "QSAP upVal", upVal
 			rightVal = QSA(row, col, 1)
-			print "QSAP rightVal", rightVal
+			#print "QSAP rightVal", rightVal
 			downVal = QSA(row, col, 2)
-			print "QSAP downVal", downVal
+			#print "QSAP downVal", downVal
 			leftVal = QSA(row, col, 3)
-			print "QSAP leftVal", leftVal
+			#print "QSAP leftVal", leftVal
 			return max(upVal, rightVal, downVal, leftVal)
 		
 		def getAction(in_row, in_col):
+			#print "getAction called on [", in_row, ",", in_col, "]"
 			def fun(in_row, in_col, candidate_action):
+				#print "fun called on [", in_row, ",", in_col, "]", candidate_action
 				currCell = self.grid[in_row][in_col]
+				#print currCell.actions[candidate_action], self.Ne
 				if(currCell.actions[candidate_action] > self.Ne):
 					print "fun condition met, returning reward function"
 					return self.RPlus
 				else:
-					print "fun condition not met, returning  QSAP"
+					#print "fun condition not met, returning  QSAP"
 					return QSAP(in_row, in_col, candidate_action)
 
-			print "getting action..."
+			#print "getting action..."
 			candidateActions = [0.0,0.0,0.0,0.0]
 			candidateActions[0] = fun(in_row, in_col, 0) #up call
-			print "getAction up value", candidateActions[0]
+			#print "getAction up value", candidateActions[0]
 			candidateActions[1] = fun(in_row, in_col, 1) #right call
-			print "getAction right value", candidateActions[1]
+			#print "getAction right value", candidateActions[1]
 			candidateActions[2] = fun(in_row, in_col, 2) #down call
-			print "getAction down value", candidateActions[2]
+			#print "getAction down value", candidateActions[2]
 			candidateActions[3] = fun(in_row, in_col, 3) #left call
-			print "getAction left value", candidateActions[3]
+			#print "getAction left value", candidateActions[3]
 			temp = candidateActions.index(max(candidateActions))
+			print "candidateActions values", candidateActions[0], candidateActions[1], candidateActions[2], candidateActions[3]
 			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
 			return temp
 
@@ -318,28 +335,61 @@ class Grid(object):
 			print "TDHelper t (timestep)", t
 			alpha = float(60)/(59+t)
 			print "TDHelper alpha", alpha
-			retVal = qutil
-			print "TDHelper qutil", qutil
-			upVal = QSAP(in_row, in_col, 0)
-			print "TDHelper upval", upVal
-			rightVal = QSAP(in_row, in_col, 1)
-			print "TDHelper rightval", rightVal
-			downVal = QSAP(in_row, in_col, 2)
-			print "TDHelper downVal", downVal
-			leftVal = QSAP(in_row, in_col, 3)
-			print "TDHelper leftVal", leftVal
-			QSPAP = max(upVal, rightVal, downVal, upVal) #QSPAP = most optimal QSAP
-			retVal += float(alpha)*(rewardFunction + discountFactor*QSPAP-qutil)
-			print "TDHelper retval", retVal
+			retVal = float(qutil)
+			action = getAction(in_row, in_col) #get the action
+			print "action", action,
+			#print "TDHelper qutil", qutil
+			QSPAP = QSAP(in_row, in_col, action)
+			print "qutil", qutil, "QSPAP", QSPAP
+			retVal += alpha*(rewardFunction + discountFactor*QSPAP-qutil)
+			#print "TDHelper retval", retVal
 			return retVal
 
-		print "TDLearning called on [", in_row, ",", in_col, "]"
-		action = getAction(in_row, in_col) #get the action
-		print "TDLearning action", action
-		print "\n"
+		print "TDLearning called on [", in_row, ",", in_col, "]",
+		if(in_row<0 or in_row > self.rows-1 or in_col<0 or in_col > self.cols-1):
+			print "TDLearning called out of bounds, exiting"
+			return
+
 		currCell = self.grid[in_row][in_col]
+		if(currCell.isWall()):
+			print "TD action called on wall, exiting"
+			return
 		currCell.qutility.append(TDHelper(currCell.qutility[-1], in_row, in_col)) #indexed by timestamp
-		#print "action:", action
+		print "new qutility:", currCell.qutility[-1]
+
+	def printUtilities(self):
+		print "printing utilities..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					print col.utility, "\t",
+			print "\n",
+		print "utilities printed"
+
+	def printQUtilities(self):
+		print "printing utilities..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					print col.qutility[-1], "\t",
+			print "\n",
+		print "qutilities printed"
+
+	def printRMSErrors(self):
+		print "printing RMSErrors..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					print col.RMSError, "\t",
+			print "\n",
+		print "RMSErrors printed"
+
 
 	def __init__(self, filename_grid, num_iterations):
 		self.grid = self.parseGrid(filename_grid)
