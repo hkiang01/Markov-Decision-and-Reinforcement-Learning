@@ -47,16 +47,16 @@ class Cell(object):
 	
 	#for value iteration
 	def getFigure(self):
-		# if(self.value!=0.0):
-		# 	return self.value
+		if(self.value!=0.0):
+			return self.value
 		if(self.utility[-1]!=0):
 			return self.utility[-1]
 		return rewardFunction
 
 	#for TD Learning
 	def getQFigure(self):
-		# if(self.value!=0.0):
-		# 	return self.value
+		if(self.value!=0.0):
+			return self.value
 		if(self.qutility[-1]!=0):
 			return self.qutility[-1]
 		return rewardFunction
@@ -152,8 +152,12 @@ class Grid(object):
 			if(num_iterations <= 0):
 				return 0
 			num_iterations -= 1
-
+			
 			rootCell = self.grid[root_row][root_col]
+			if(delta < convergeanceThreshold):
+				rootCell.convergeCount += 1
+				return 0
+
 			currCell = self.grid[in_row][in_col]
 			col = int(in_col+round(math.sin(math.radians(candidate_move*90))))
 			row = int(in_row+round(math.sin(math.radians(candidate_move*90-90))))
@@ -165,17 +169,12 @@ class Grid(object):
 			candidateCell = self.grid[row][col]
 			if(candidateCell.isWall()):
 				return currCell.getFigure()
-
-
-			if(delta < convergeanceThreshold):
-				rootCell.convergeCount += 1
-				return 0
 			
 			#leave this commented out, every non-wall has a utility
 			# if(candidateCell.value!=0):
 			# 	return candidateCell.getFigure()
 
-			#compare last two entries for convergeance test
+			#compare last two entries in utiltiy for convergeance test
 			next_delta = float("infinity")
 			if(len(currCell.utility)>=2):
 				next_delta = abs(currCell.utility[-1] - currCell.utility[-2])
