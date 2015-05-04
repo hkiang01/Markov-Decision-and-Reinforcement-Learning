@@ -498,9 +498,9 @@ class Grid(object):
 		for row in self.grid:
 			for col in row:
 				if(col.isWall()==True):
-					print "W\t",
+					print "W\t\t\t",
 				else:
-					print col.utility[-1], "\t",
+					print "%.4f " % col.utility[-1], "\t",
 			print "\n",
 		print "utilities printed"
 
@@ -509,9 +509,9 @@ class Grid(object):
 		for row in self.grid:
 			for col in row:
 				if(col.isWall()==True):
-					print "W\t",
+					print "W\t\t\t",
 				else:
-					print col.qutility[-1], "\t",
+					print "%.4f " % col.qutility[-1], "\t",
 			print "\n",
 		print "qutilities printed"
 
@@ -520,9 +520,9 @@ class Grid(object):
 		for row in self.grid:
 			for col in row:
 				if(col.isWall()==True):
-					print "W\t",
+					print "W\t\t\t",
 				else:
-					print col.RMSError, "\t",
+					print "%.4f " % col.RMSError, "\t",
 			print "\n",
 		print "RMSErrors printed"
 
