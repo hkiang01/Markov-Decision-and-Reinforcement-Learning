@@ -21,7 +21,7 @@ for k in xrange(0, 100): #number of trials
 			my_grid.printUtilities()
 			my_grid.printVisitedCount()			
 			my_grid.printQUtilities()
-			my_grid.printRMSErrors()
+			#my_grid.printRMSErrors()
 
 # for i in xrange(0, 10): #number of moves
 # 	my_grid.TDLearning(my_grid.currRow, my_grid.currCol)
