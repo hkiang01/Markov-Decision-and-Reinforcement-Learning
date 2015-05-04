@@ -14,14 +14,13 @@ for iterations in xrange(10, 11):
 my_grid.setCurrentPosition(3,2) #start position
 my_grid.printGrid()
 
-for k in xrange(0, 100): #number of trials
+for k in xrange(0, 10000): #number of trials
 	for i in xrange(my_grid.rows-1, -1, -1):
 		for j in xrange(my_grid.cols-1, -1, -1):
 			my_grid.TDLearning(i, j)
-			my_grid.printUtilities()
-			my_grid.printVisitedCount()			
-			my_grid.printQUtilities()
-			#my_grid.printRMSErrors()
+			#my_grid.printUtilities()
+			#my_grid.printVisitedCount()			
+			#my_grid.printQUtilities()
 
 # for i in xrange(0, 10): #number of moves
 # 	my_grid.TDLearning(my_grid.currRow, my_grid.currCol)
