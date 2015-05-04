@@ -17,7 +17,7 @@ class Cell(object):
 		self.wall = in_wall #a bool
 		self.start = in_start #a bool
 		self.intendedDirection = -1 #0 up, 1 right, 2 down, 3 left, -1 unassigned
-		self.qIntedndedDirection = -1
+		self.qIntendedDirection = -1
 		self.probUp = 0.0
 		self.probRight = 0.0
 		self.probDown = 0.0
@@ -28,6 +28,7 @@ class Cell(object):
 		self.currPos = False
 		self.RMSError = 0.0
 		self.convergeCount = 0
+		self.visitedCount = 0
 		
 	#getters
 	def getValue(self):
@@ -314,8 +315,10 @@ class Grid(object):
 						print ">\t",
 					elif(col.intendedDirection==2):
 						print "v\t",
-					else:
+					elif(col.intendedDirection==3):
 						print "<\t",
+					else:
+						print "\t",
 			print "\n",
 		print "grid printed"
 	
@@ -341,6 +344,34 @@ class Grid(object):
 		self.grid[in_row][in_col].currPos = True
 		self.currRow = in_row
 		self.currCol = in_col
+		self.grid[in_row][in_col].visitedCount += 1
+	
+	def move(self, in_move):
+		#have not yet set an initial position
+		if(self.currRow==-1 or self.currCol==-1):
+			print "Please call setCurrentPosition(row, col)"
+			return
+
+		currCell = self.grid[self.currRow][self.currCol]
+		col = int(self.currCol+round(math.sin(math.radians(in_move*90))))
+		row = int(self.currRow+round(math.sin(math.radians(in_move*90-90))))		
+
+		if(row < 0 or row > self.rows-1 or col < 0 or col > self.cols-1):
+			#stay put
+			currCell.visitedCount += 1
+			return
+
+		candidateCell = self.grid[row][col]
+		if(candidateCell.isWall()):
+			#stay put
+			currCell.visitedCount += 1
+			return
+		
+		currCell.currPos = False
+		self.currRow = row
+		self.currCol = col
+		candidateCell.currPos = True
+		candidateCell.visitedCount += 1
 
 	def TDLearning(self, in_row, in_col):
 
@@ -401,6 +432,7 @@ class Grid(object):
 			#print "QSAP downVal", downVal
 			leftVal = QSA(row, col, 3)
 			#print "QSAP leftVal", leftVal
+
 			return max(upVal, rightVal, downVal, leftVal)
 		
 		def getAction(in_row, in_col):
@@ -428,6 +460,7 @@ class Grid(object):
 			#print "getAction left value", candidateActions[3]
 			temp = candidateActions.index(max(candidateActions))
 			#print "candidateActions values", candidateActions[0], candidateActions[1], candidateActions[2], candidateActions[3]
+			self.grid[in_row][in_col].qIntendedDirection = temp
 			self.grid[in_row][in_col].actions[temp] += 1 #update n for the respective action in a cell
 			return temp
 
@@ -492,6 +525,17 @@ class Grid(object):
 					print col.RMSError, "\t",
 			print "\n",
 		print "RMSErrors printed"
+
+	def printVisitedCount(self):
+		print "printing visitedCounts..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					print col.visitedCount, "\t",
+			print "\n",
+		print "visitedCounts printed"
 
 
 	def __init__(self, filename_grid, num_iterations):
