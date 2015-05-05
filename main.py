@@ -38,4 +38,5 @@ for i in xrange(0,my_grid.rows):
 my_grid.printUtilities()
 my_grid.printVisitedCount()			
 my_grid.printQUtilities()
+my_grid.printQIntendedDirections()
 my_grid.printRMSErrors()
