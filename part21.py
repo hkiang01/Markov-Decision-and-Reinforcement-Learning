@@ -9,6 +9,22 @@ import matplotlib.pyplot as plt
 
 #parse translates the image data to a (sample_size)x784 element 2D list
 def parse(filename, sample_size):
+
+    # f = open(filename, "r")
+    # retList = []
+    # for i in xrange(0, sample_size):
+    #     for j in xrange(0, 28):
+    #         currline = f.readline()
+    #         currList = []
+    #         for c in currline:
+    #             if(c=='#' or c=='+'):
+    #                 currList.append(1)
+    #             elif(c==' '):
+    #                 currList.append(0)
+    #         retList.append(currList)
+    # f.close()
+    # return retList
+
     f = open(filename, "r")
     filestring = f.read()
     f.close()
@@ -17,14 +33,16 @@ def parse(filename, sample_size):
         curList = []
         start = i*784
         end = start+784
-	curString = filestring[start:end]
-	for c in curString:
-	    if(c == '#' or c == '+'):
-	        curList.append(1)
-	    else:
-	        curList.append(0)
-	retList.append(curList)
+    	curString = filestring[start:end]
+        # print "len(curString) =", len(curString)
+        for c in curString:
+    	    if(c == '#' or c == '+'):
+    	        curList.append(1)
+    	    elif(c==' '):
+    	        curList.append(0)
+        retList.append(curList)
 
+    print "len(retList) =", len(retList)
     return retList
 
 #begin main
@@ -40,17 +58,22 @@ f.close()
 
 #trainList is a (sample_size)x784 2D list
 #each sample is represented by a list of 784 (28x28) digits
-trainList = copy.deepcopy(parse("trainingimages", sample_size))
+#trainList = copy.deepcopy(parse("trainingimages", sample_size))
+trainList = parse("trainingimages", sample_size)
+# print "len(trainList) =", len(trainList)
 
 f = open("testlabels",'r')
 testLabels = map(int,f.readlines())
 f.close()
-testList = copy.deepcopy(parse("testimages", len(testLabels)))
+#testList = copy.deepcopy(parse("testimages", len(testLabels)))
+testList = parse("testimages", len(testLabels))
+# print "len(testList) =", len(testList)
+
 
 for i in range(28):
     print trainList[0][i*28:(i*28)+28]
     
-    
+sys.exit(0)
     
 #begin perceptron
 W = []
