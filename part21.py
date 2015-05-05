@@ -40,6 +40,10 @@ def parse(filename, sample_size):
     	        curList.append(1)
     	    elif(c==' '):
     	        curList.append(0)
+
+        while(len(curList)<784): #hacky fix
+            curList.append(0)
+        
         retList.append(curList)
 
     print "len(retList) =", len(retList)
@@ -60,20 +64,20 @@ f.close()
 #each sample is represented by a list of 784 (28x28) digits
 #trainList = copy.deepcopy(parse("trainingimages", sample_size))
 trainList = parse("trainingimages", sample_size)
-# print "len(trainList) =", len(trainList)
 
 f = open("testlabels",'r')
 testLabels = map(int,f.readlines())
 f.close()
 #testList = copy.deepcopy(parse("testimages", len(testLabels)))
 testList = parse("testimages", len(testLabels))
-# print "len(testList) =", len(testList)
 
 
-for i in range(28):
-    print trainList[0][i*28:(i*28)+28]
+for j in xrange(0, 5):
+    for i in xrange(28):
+        print trainList[j][i*28:(i*28)+28]
+    print ""
     
-sys.exit(0)
+#sys.exit(0)
     
 #begin perceptron
 W = []
