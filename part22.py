@@ -33,21 +33,31 @@ def createDictionary(inputLabels,inputDict):
     counter = 0
     retList = [{},{},{},{},{},{},{},{}]
     for dictionary in inputDict:
-	category = inputLabels[counter]
-	for word in dictionary:
-	   key = word #the word
-	   value = dictionary.get(key) #the frequency
-	   value += retList[category].get(key, 0) #increase the value (frequency) by the existing entry's value, default is 0 if none is found
-	   retList[category][key] = value #update the entry
+    	category = inputLabels[counter]
+    	for word in dictionary:
+    	   key = word #the word
+    	   value = dictionary.get(key) #the frequency
+    	   value += retList[category].get(key, 0) #increase the value (frequency) by the existing entry's value, default is 0 if none is found
+    	   retList[category][key] = value #update the entry
         counter += 1
     return retList
 
-trainLabels, trainDict = copy.deepcopy(parse("8category.training.txt"))
-Dictionary = copy.deepcopy(createDictionary(trainLabels, trainDict))
+trainLabels, trainDict = parse("8category.training.txt")
+# print trainLabels
+# print trainDict[0]
+print "length of trainLabels:", len(trainLabels)
+print "length of trainDict:", len(trainDict)
+Dictionary = createDictionary(trainLabels, trainDict)
 #Dictionary holds 8 dictionaries - one for each category
+print "length of Dictionary:", len(Dictionary)
+#print Dictionary[0]
 
 iterations = int(sys.argv[1])
 random = sys.argv[2]
+
+print Dictionary
+
+sys.exit(0)
 
 W = []
 for i in Dictionary:
@@ -59,17 +69,6 @@ for i in Dictionary:
             curW.append(0)
         else:
             print "input error: use 'r' or 'z' to indicate weight init"
-            return
+            #return
     W.append(curW)
-
-
-
-
-
-
-
-
-
-
-
 
