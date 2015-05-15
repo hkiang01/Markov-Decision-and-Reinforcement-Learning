@@ -322,6 +322,26 @@ class Grid(object):
 			print "\n",
 		print "grid printed"
 	
+	def printQIntendedDirections(self):
+		print "printing directions..."
+		for row in self.grid:
+			for col in row:
+				if(col.isWall()==True):
+					print "W\t",
+				else:
+					if(col.qIntendedDirection==0):
+						print "^\t",
+					elif(col.qIntendedDirection==1):
+						print ">\t",
+					elif(col.qIntendedDirection==2):
+						print "v\t",
+					elif(col.qIntendedDirection==3):
+						print "<\t",
+					else:
+						print "\t",
+			print "\n",
+		print "grid printed"
+
 	def printUtilities(self):
 		for row in self.grid:
 			for col in row:

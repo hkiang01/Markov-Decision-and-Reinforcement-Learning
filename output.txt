@@ -95,6 +95,14 @@ printing qutilities...
 0.8515  	W			W			W			0.9500  	0.9500  	
 0.8030  	0.7550  	0.8030  	0.8515  	0.9005  	0.9500  	
 qutilities printed
+printing directions...
+^	W	^	>	>	^	
+^	>	^	^	W	^	
+^	<	^	^	^	^	
+^	<	<	^	^	^	
+^	W	W	W	^	^	
+^	>	>	>	>	^	
+grid printed
 printing RMSErrors...
 0.0500  	W			0.0500  	0.0412  	0.0412  	0.0500  	
 0.0412  	0.0360  	0.0412  	0.0500  	W			0.0447  	
